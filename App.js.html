@@ -1,0 +1,80 @@
+<script type="text/babel">
+    class App extends React.Component {
+      constructor(){
+        super();
+        this.state = {
+          repos: [],
+          inputValue: "",
+        }
+        this.handleChange = this.handleChange.bind(this)
+        this.handleSubmit = this.handleSubmit.bind(this)
+    
+      }
+      handleChange(e){
+        this.setState({
+          inputValue: e.target.value
+        })
+      }
+      handleSubmit(e){
+        e.preventDefault()
+        fetch(`https://api.github.com/users/${this.state.inputValue}/repos`)
+        .then(function(data){
+            data.json()
+            .then(response =>{
+                this.setState({
+                  repos : response,
+                  inputValue: ""
+                })
+            })
+            .catch(err =>{
+            console.log(err)
+            })
+        }.bind(this))
+      }
+      render() {
+        return (
+        <div> 
+           <div>
+            <form style={{"padding":"2%"}} onSubmit={this.handleSubmit}>
+                <div class="input-field col s4">
+                  <input required value={this.state.inputValue}
+                    onChange={this.handleChange}placeholder="user name" id="user_name" type="text" class="validate" />
+                </div>
+                <button className="ml-3 waves-effect dark black waves-light btn-small" type="submit">
+                  Explore
+                </button>
+            </form>
+          </div>
+          <div>
+            {this.state.repos.map(function(r){
+              return (
+                  <div className="card">
+                  <div className="card-content">
+                    <span className="card-title activator grey-text text-darken-4">{r["full_name"]}<i className="material-icons right">more_vert</i></span>
+                    <p>
+                      
+                      <h6 className = "ml-2"> <i class="fab fa-github"></i> {r["stargazers_count"]}  <i style = {{"verticalAlign":"bottom"}} class="material-icons">star</i>  <a target="_blank" rel="noopener noreferrer" style ={{"color":"gray"}} href = {r["html_url"]}> VIEW ON GITHUB</a> </h6>
+                      <button onClick = {function(){
+                      google.script
+                      .run.addRepository({
+                      "name" : r["full_name"],
+                      "description" :r["description"],
+                      "url" : r["html_url"]
+                      })
+                      }} className="ml-2 waves-effect blue waves-light btn-small" type="button"> Add to Doc</button>
+    
+                    </p>
+                  </div>
+                  <div className="card-reveal">
+                    <span className="card-title grey-text text-darken-4">{r["full_name"]}<i class="material-icons right">close</i></span>
+                    <p>{r["description"]}</p>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+        )
+      }
+    }
+    </script>
